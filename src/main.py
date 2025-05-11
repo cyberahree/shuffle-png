@@ -124,6 +124,8 @@ class PNGShuffle:
         
         # collect chunks
         chunks = self._collect_chunks(data[8:])
+        ihdr = chunks.pop(0)
+        iend = chunks.pop(len(chunks) - 1)
         b_new_file = PNG_MAGIC
 
         # rearrange the chunks
@@ -131,11 +133,22 @@ class PNGShuffle:
         keys = list(chunks.values())
         random.shuffle(keys)
 
+        # append the IEND first
+        b_new_file += iend.length + iend.type + iend.data + iend.crc
+
         # append the chunks in order
         for i in range(len(keys)):
             data = keys[i]
 
             b_new_file += data.length + data.type + data.data + data.pos
+        
+        # append the IHDR last
+        # (i know we already moved the iend to the beginning, that works
+        # but make it doubler annoying and put the IHDR at the end
+        # additionally, if the renderer is smart enough, and the
+        # rng is unfortunate enough, it might be able to render the image
+        # correctly)
+        b_new_file += ihdr.length + ihdr.type + ihdr.data + ihdr.crc
 
         return b_new_file
 
@@ -151,8 +164,8 @@ def get_bytes(file: str) -> bytes:
 if __name__ == "__main__":
     parser = PNGShuffle()
 
-    img_bytes = get_bytes("unshuffled_example.png")
-    unshuffled_bytes = parser.unshuffle(img_bytes)
+    img_bytes = get_bytes("lol.png")
+    shuffled_bytes = parser.shuffle(img_bytes)
 
-    with open("reordered_example.png", "wb") as f:
-        f.write(unshuffled_bytes)
+    with open("example1.png", "wb") as f:
+        f.write(shuffled_bytes)
