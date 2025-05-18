@@ -35,7 +35,7 @@ The script manipulates the order of PNG chunks. A standard PNG file starts with 
 3.  Use the `unshuffle` method to restore a shuffled PNG file to its original state.
 
 ```python
-from .src/main import PNGShuffle, get_bytes
+from .src.main import PNGShuffle, get_bytes
 
 if __name__ == "__main__":
     parser = PNGShuffle()
